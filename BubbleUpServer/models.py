@@ -11,9 +11,9 @@ class RegisteredClient(Model):
 class Score(Model):
     registered_client = ForeignKey(RegisteredClient)
     user_name = CharField(max_length=64)
+    played_on = DateTimeField()
     recieved_on = DateTimeField()
     play_time = IntegerField()
     altitude = IntegerField()
     score = IntegerField()
     ip = CharField(max_length=50)
-
