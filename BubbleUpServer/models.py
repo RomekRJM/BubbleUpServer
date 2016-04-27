@@ -6,6 +6,8 @@ from django.db.models import Model, CharField, DateTimeField, IntegerField, Fore
 class RegisteredClient(Model):
     uuid = CharField(max_length=36)
     date_joined = DateTimeField()
+    country = CharField(max_length=256, blank=True, null=True)
+    ip = CharField(max_length=40)
 
 
 class Score(Model):

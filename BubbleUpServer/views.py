@@ -37,7 +37,8 @@ def registeredclient_list(request):
     elif request.method == 'POST':
         serializer = RegisteredClientSerializer(data={
             "uuid": str(uuid.uuid4()),
-            "date_joined": datetime.datetime.utcnow()
+            "date_joined": datetime.datetime.utcnow(),
+            "ip": request.META['REMOTE_ADDR']
         })
         if serializer.is_valid():
             serializer.save()
