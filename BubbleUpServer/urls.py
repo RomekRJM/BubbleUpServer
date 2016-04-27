@@ -16,25 +16,17 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 
-from django.contrib.auth.models import User
-from rest_framework import routers, serializers, viewsets
+from rest_framework import routers
 
-
-class UserSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = User
-        fields = ('url', 'username', 'email', 'is_staff')
-
-
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+import views
 
 router = routers.DefaultRouter()
-router.register(r'users', UserViewSet)
+router.register(r'registered_client', views.RegisteredClientViewSet)
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^api', include(router.urls)),
-    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
+    # url(r'^api', include(router.urls)),
+    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    url(r'^registered_client/$', views.registeredclient_list),
+    url(r'^registered_clients/(?P<uuid>[0-9a-z-]+)/$', views.registered_client_detail)
 ]
