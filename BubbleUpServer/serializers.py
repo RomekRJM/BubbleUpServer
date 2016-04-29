@@ -9,4 +9,4 @@ class RegisteredClientSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = RegisteredClient
-        fields = ('uuid', 'date_joined', 'country', 'ip')
+        fields = ('uuid', 'phrase', 'date_joined', 'country', 'ip')

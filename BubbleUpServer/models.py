@@ -8,6 +8,7 @@ class RegisteredClient(Model):
     date_joined = DateTimeField()
     country = CharField(max_length=256, blank=True, null=True)
     ip = CharField(max_length=40)
+    phrase = CharField(max_length=128, blank=True, default='')
 
 
 class Score(Model):
