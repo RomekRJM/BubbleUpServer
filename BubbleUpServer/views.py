@@ -1,11 +1,7 @@
 import uuid
 
-from django.http import HttpResponse, Http404
-from rest_framework.views import APIView
-
 # Create your views here.
-from rest_framework import status
-from rest_framework import viewsets
+from rest_framework import generics, mixins, viewsets
 from rest_framework.response import Response
 
 from BubbleUpServer.models import RegisteredClient
@@ -18,11 +14,12 @@ class RegisteredClientViewSet(viewsets.ModelViewSet):
     serializer_class = RegisteredClientSerializer
 
 
-class RegisteredClientList(APIView):
-    def get(self, request, format=None):
-        registered_client = RegisteredClient.objects.all()
-        serializer = RegisteredClientSerializer(registered_client, many=True)
-        return Response(serializer.data)
+class RegisteredClientList(mixins.ListModelMixin, generics.GenericAPIView):
+    queryset = RegisteredClient.objects.all()
+    serializer_class = RegisteredClientSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
     def post(self, request, format=None):
         serializer = RegisteredClientSerializer(data={
@@ -36,28 +33,8 @@ class RegisteredClientList(APIView):
         return Response(serializer.errors, status=400)
 
 
-class RegisteredClientDetail(APIView):
-    def get_object(self, uuid):
-        try:
-            return RegisteredClient.objects.get(uuid__exact=uuid)
-        except RegisteredClient.DoesNotExist:
-            raise Http404
-
-    def get(self, request, uuid, format=None):
-        registered_client = self.get_object(uuid)
-        serializer = RegisteredClientSerializer(registered_client)
-        return Response(serializer.data)
-
-    def put(self, request, uuid, format=None):
-        registered_client = self.get_object(uuid)
-        serializer = RegisteredClientSerializer(registered_client, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            Response(serializer.data)
-        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, uuid, format=None):
-        registered_client = self.get_object(uuid)
-        registered_client.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+class RegisteredClientDetail(generics.RetrieveUpdateDestroyAPIView):
+    lookup_field = 'uuid'
+    queryset = RegisteredClient.objects.all()
+    serializer_class = RegisteredClientSerializer
 
