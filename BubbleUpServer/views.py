@@ -53,5 +53,11 @@ class RegisteredClientDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 class ScoreList(generics.ListCreateAPIView):
-    queryset = Score.objects.all().order_by('played_on')
     serializer_class = ScoreSerializer
+
+    def get_queryset(self):
+        if 'uuid' in self.kwargs:
+            registered_client = RegisteredClient.objects.get(uuid=self.kwargs['uuid'])
+            return Score.objects.filter(registered_client_id=registered_client.id).order_by('played_on')
+
+        return Score.objects.all().order_by('played_on')
