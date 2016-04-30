@@ -19,4 +19,3 @@ class Score(Model):
     play_time = IntegerField()
     altitude = IntegerField()
     score = IntegerField()
-    ip = CharField(max_length=50)

@@ -5,9 +5,9 @@ from rest_framework import generics, mixins, viewsets
 from rest_framework.response import Response
 from django.http import HttpResponse
 
-from BubbleUpServer.models import RegisteredClient
+from BubbleUpServer.models import RegisteredClient, Score
 from BubbleUpServer.phrases import Phrase
-from BubbleUpServer.serializers import RegisteredClientSerializer
+from BubbleUpServer.serializers import RegisteredClientSerializer, ScoreSerializer
 import datetime
 
 
@@ -51,3 +51,7 @@ class RegisteredClientDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = RegisteredClient.objects.all()
     serializer_class = RegisteredClientSerializer
 
+
+class ScoreList(generics.ListCreateAPIView):
+    queryset = Score.objects.all().order_by('played_on')
+    serializer_class = ScoreSerializer

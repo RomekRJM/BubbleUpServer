@@ -28,5 +28,7 @@ urlpatterns = [
     # url(r'^api', include(router.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^registered_client/$', views.RegisteredClientList.as_view(), name='registered_client'),
-    url(r'^registered_clients/(?P<uuid>[0-9a-z-]+)/$', views.RegisteredClientDetail.as_view())
+    url(r'^registered_clients/(?P<uuid>[0-9a-z-]+)/$', views.RegisteredClientDetail.as_view()),
+    url(r'^scores/$', views.ScoreList.as_view())
+
 ]
