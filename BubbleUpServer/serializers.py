@@ -5,15 +5,17 @@ from BubbleUpServer.models import RegisteredClient, Score
 __author__ = "roman.subik"
 
 
-class RegisteredClientSerializer(serializers.HyperlinkedModelSerializer):
+class RegisteredClientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RegisteredClient
         fields = ('uuid', 'phrase', 'date_joined', 'country', 'ip')
 
 
-class ScoreSerializer(serializers.HyperlinkedModelSerializer):
+class ScoreSerializer(serializers.ModelSerializer):
+
+    registered_client = serializers.SlugRelatedField(many=False, read_only=True, slug_field='uuid')
 
     class Meta:
         model = Score
-        fields = ('registered_client', 'user_name', 'played_on', 'recieved_on', 'play_time', 'altitude', 'score')
+        fields = ('user_name', 'played_on', 'recieved_on', 'play_time', 'altitude', 'score', 'registered_client')
