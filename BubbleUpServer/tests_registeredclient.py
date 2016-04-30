@@ -6,23 +6,26 @@ from models import RegisteredClient
 import datetime
 
 
-class AccountTests(APITestCase):
+def create_registeredclient():
+    registered_client = RegisteredClient()
+    registered_client.country = 'Poland'
+    registered_client.ip = '212.33.42.138'
+    registered_client.date_joined = datetime.datetime.utcnow()
+    registered_client.uuid = 'deeda2d0-8d18-45d7-b720-3198c8acf430'
+    registered_client.save()
+
+    return registered_client
+
+
+class RegisteredClientTests(APITestCase):
     def test_get(self):
-        """
-        Ensure we can create a new account object.
-        """
-
-        registered_client = RegisteredClient()
-        registered_client.country = 'Poland'
-        registered_client.ip = '212.33.42.138'
-        registered_client.date_joined = datetime.datetime.utcnow()
-        registered_client.uuid = 'deeda2d0-8d18-45d7-b720-3198c8acf430'
-        registered_client.save()
-
+        registered_client = create_registeredclient()
         url = reverse('registered_client')
         response = self.client.get(url, format='json')
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(RegisteredClient.objects.count(), 1)
+        self.assertEqual(response.data[0]['uuid'], registered_client.uuid)
 
     def test_post(self):
         url = reverse('registered_client')
@@ -59,3 +62,34 @@ class AccountTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(RegisteredClient.objects.count(), 0)
+
+    def test_put(self):
+        registered_client = create_registeredclient()
+        data = {
+            "uuid": registered_client.uuid,
+            "phrase": "nice wise ox",
+            "date_joined": "2016-04-30T14:36:32.860402Z",
+            "country": "Croatia",
+            "ip": "127.0.0.1"
+        }
+        response = self.client.put('/registered_clients/' + registered_client.uuid + '/', data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(RegisteredClient.objects.count(), 1)
+        self.assertEqual(str(response.data['country']), data['country'])
+
+    def test_delete(self):
+        registered_client = create_registeredclient()
+        self.assertEqual(RegisteredClient.objects.count(), 1)
+
+        response = self.client.delete('/registered_clients/' + registered_client.uuid + '/', format='json')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(RegisteredClient.objects.count(), 0)
+
+    def test_get_single(self):
+        registered_client = create_registeredclient()
+        response = self.client.get('/registered_clients/' + registered_client.uuid + '/', format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(RegisteredClient.objects.count(), 1)
+        self.assertEqual(response.data['uuid'], registered_client.uuid)
