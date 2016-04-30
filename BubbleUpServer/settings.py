@@ -31,13 +31,13 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'BubbleUpServer',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'BubbleUpServer',
     'rest_framework'
 ]
 
@@ -103,6 +103,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
+REST_FRAMEWORK = {
+     'TEST_REQUEST_DEFAULT_FORMAT': 'json'
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
