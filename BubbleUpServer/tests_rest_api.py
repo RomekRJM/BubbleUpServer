@@ -113,8 +113,8 @@ def create_score(registered_client):
     return score
 
 
-def get_played_on_date(response, index):
-    return datetime.datetime.strptime(response.data[index]['played_on'], '%Y-%m-%dT%H:%M:%S.%fZ')
+def get_played_on_date_as_epoch(response, index):
+    return datetime.datetime.strptime(response.data[index]['played_on'], '%Y-%m-%dT%H:%M:%S.%fZ').strftime("%s") * 1000
 
 
 class ScoreTests(APITestCase):
@@ -130,7 +130,7 @@ class ScoreTests(APITestCase):
         self.assertEqual(response.data[0]['registered_client'], registered_client.uuid)
         self.assertEqual(response.data[1]['registered_client'], registered_client.uuid)
 
-        self.assertTrue(get_played_on_date(response, 0) >= get_played_on_date(response, 1))
+        self.assertTrue(get_played_on_date_as_epoch(response, 0) >= get_played_on_date_as_epoch(response, 1))
 
     def test_get_first_100_only(self):
         for i in range(120):
@@ -155,7 +155,12 @@ class ScoreTests(APITestCase):
         response = self.client.post('/scores/registered_clients/' + registered_client.uuid + '/',
                                     data=data, format='json')
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Score.objects.count(), 1)
-        self.assertEqual(response.data[0]['registered_client'], registered_client.uuid)
+        self.assertEqual(response.data['registered_client'], data['registered_client'])
+        self.assertEqual(response.data['played_on'], data['played_on'])
+        self.assertEqual(response.data['user_name'], data['user_name'])
+        self.assertEqual(response.data['play_time'], data['play_time'])
+        self.assertEqual(response.data['altitude'], data['altitude'])
+        self.assertEqual(response.data['score'], data['score'])
 

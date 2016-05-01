@@ -16,7 +16,8 @@ class RegisteredClientSerializer(serializers.ModelSerializer):
 
 class ScoreSerializer(serializers.ModelSerializer):
 
-    registered_client = serializers.SlugRelatedField(many=False, read_only=True, slug_field='uuid', allow_null=True)
+    registered_client = serializers.SlugRelatedField(many=False, read_only=False, slug_field='uuid', allow_null=True,
+                                                     queryset=RegisteredClient.objects.all())
     recieved_on = serializers.StringRelatedField(required=False)
 
     class Meta:
@@ -27,7 +28,7 @@ class ScoreSerializer(serializers.ModelSerializer):
         validated_data['recieved_on'] = datetime.datetime.utcnow()
 
         score = Score()
-        score.registered_client = RegisteredClient.objects.get(uuid__exact=validated_data['registered_client'])
+        score.registered_client = RegisteredClient.objects.get(uuid__exact=validated_data['registered_client'].uuid)
         score.user_name = validated_data['user_name']
         score.played_on = validated_data['played_on']
         score.recieved_on = validated_data['recieved_on']
@@ -36,3 +37,4 @@ class ScoreSerializer(serializers.ModelSerializer):
         score.score = validated_data['score']
 
         score.save()
+        return score
