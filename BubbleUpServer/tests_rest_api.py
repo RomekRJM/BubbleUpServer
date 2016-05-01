@@ -2,8 +2,12 @@ from django.test import TestCase
 from django.core.urlresolvers import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-from models import RegisteredClient
+
+from BubbleUpServer.views import ScoreList
+from models import RegisteredClient, Score
 import datetime
+import random
+import string
 
 
 def create_registeredclient():
@@ -93,3 +97,65 @@ class RegisteredClientTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(RegisteredClient.objects.count(), 1)
         self.assertEqual(response.data['uuid'], registered_client.uuid)
+
+
+def create_score(registered_client):
+    score = Score()
+    score.registered_client = registered_client
+    score.user_name = "client-".join(random.choice(string.lowercase) for i in range(3))
+    score.played_on = datetime.datetime.utcnow()
+    score.recieved_on = datetime.datetime.utcnow()
+    score.play_time = random.randint(2000, 30000)
+    score.altitude = random.randint(0, 2000)
+    score.score = random.randint(0, 130)
+    score.save()
+
+    return score
+
+
+def get_played_on_date(response, index):
+    return datetime.datetime.strptime(response.data[index]['played_on'], '%Y-%m-%dT%H:%M:%S.%fZ')
+
+
+class ScoreTests(APITestCase):
+    def test_get(self):
+        registered_client = create_registeredclient()
+        create_score(registered_client)
+        create_score(registered_client)
+        response = self.client.get('/scores/registered_clients/' + registered_client.uuid + '/?order_by=play_time',
+                                   format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Score.objects.count(), 2)
+        self.assertEqual(response.data[0]['registered_client'], registered_client.uuid)
+        self.assertEqual(response.data[1]['registered_client'], registered_client.uuid)
+
+        self.assertTrue(get_played_on_date(response, 0) >= get_played_on_date(response, 1))
+
+    def test_get_first_100_only(self):
+        for i in range(120):
+            create_score(create_registeredclient())
+
+        response = self.client.get('/scores/', format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Score.objects.count(), 120)
+        self.assertEqual(len(response.data), ScoreList.MAX_ELEMENTS)
+
+    def test_post(self):
+        registered_client = create_registeredclient()
+        data = {
+            "user_name": "RomekRJM",
+            "played_on": "2016-05-01T22:22:14Z",
+            "registered_client": registered_client.uuid,
+            "play_time": 23400,
+            "altitude": 555,
+            "score": 127
+        }
+        response = self.client.post('/scores/registered_clients/' + registered_client.uuid + '/',
+                                    data=data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Score.objects.count(), 1)
+        self.assertEqual(response.data[0]['registered_client'], registered_client.uuid)
+
