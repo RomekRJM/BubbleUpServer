@@ -5,9 +5,10 @@ class Phrase():
     def __init__(self):
         self.allowed_words = [
             ["giant", "squealing", "empowered", "frowning", "starving", "violet", "astonishing", "lurking",
-             "nice"],
+             "nice", "slender", "fluffy", "confident", "comely"],
 
-            ["drunk", "sober", "raging", "fearless", "dignified", "straight", "wise", "coarse", "confused"],
+            ["drunk", "sober", "raging", "fearless", "dignified", "straight", "wise", "coarse", "confused",
+             "abstract", "wandering", "shiny", "dim"],
 
             ["dog", "ox", "fox", "penguin", "cat", "lynx", "aurochs", "panda", "sparrow", "squirell", "alpaka",
              "ram", "panda"]
