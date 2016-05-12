@@ -1,4 +1,3 @@
-from django.test import TestCase
 from django.core.urlresolvers import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -75,6 +74,42 @@ class RegisteredClientTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(RegisteredClient.objects.count(), 0)
+
+    def test_post_no_phrase(self):
+        url = reverse('registered_client')
+        data = {
+            "user_name": random_username(),
+        }
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(RegisteredClient.objects.count(), 0)
+
+    def test_post_no_username(self):
+        url = reverse('registered_client')
+        data = {
+            "phrase": "nice wise ox"
+        }
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(RegisteredClient.objects.count(), 0)
+
+    def test_post_same_name_twice(self):
+        url = reverse('registered_client')
+        data = {
+            "user_name": random_username(),
+            "phrase": "nice wise ox"
+        }
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(RegisteredClient.objects.count(), 1)
+
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(RegisteredClient.objects.count(), 1)
 
     def test_put(self):
         registered_client = create_registeredclient()

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 
 from BubbleUpServer.models import RegisteredClient, Score
 
@@ -8,6 +9,8 @@ __author__ = "roman.subik"
 
 
 class RegisteredClientSerializer(serializers.ModelSerializer):
+
+    user_name = UniqueValidator(queryset=RegisteredClient.objects.all())
 
     class Meta:
         model = RegisteredClient

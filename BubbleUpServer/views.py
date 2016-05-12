@@ -14,7 +14,7 @@ import datetime
 def has_valid_phrase(func):
     def func_wrapper(*args, **kwargs):
 
-        if not Phrase().matches(args[1].data['phrase']):
+        if ('phrase' not in args[1].data) or (not Phrase().matches(args[1].data['phrase'])):
             return HttpResponse('Unauthorized', status=401)
 
         return func(*args, **kwargs)
@@ -35,6 +35,10 @@ class RegisteredClientList(mixins.ListModelMixin, generics.GenericAPIView):
 
     @has_valid_phrase
     def post(self, request, format=None):
+
+        if "user_name" not in request.data or "phrase" not in request.data:
+            return Response(status=400)
+
         serializer = RegisteredClientSerializer(data={
             "uuid": str(uuid.uuid4()),
             "user_name": request.data['user_name'],
@@ -45,6 +49,8 @@ class RegisteredClientList(mixins.ListModelMixin, generics.GenericAPIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=201)
+        else:
+            return Response(serializer.errors, status=400)
 
 
 class RegisteredClientDetail(generics.RetrieveUpdateDestroyAPIView):
