@@ -22,7 +22,7 @@ class ScoreSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Score
-        fields = ('user_name', 'played_on', 'recieved_on', 'play_time', 'altitude', 'score', 'registered_client')
+        fields = ('played_on', 'recieved_on', 'play_time', 'altitude', 'score', 'registered_client')
 
     def create(self, validated_data):
         validated_data['recieved_on'] = datetime.datetime.utcnow()

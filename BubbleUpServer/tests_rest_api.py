@@ -8,11 +8,12 @@ from models import RegisteredClient, Score
 import datetime
 import random
 import string
+import time
 
 
 def create_registeredclient():
     registered_client = RegisteredClient()
-    registered_client.user_name = "client-".join(random.choice(string.lowercase) for i in range(3))
+    registered_client.user_name = random_username()
     registered_client.country = 'Poland'
     registered_client.ip = '212.33.42.138'
     registered_client.date_joined = datetime.datetime.utcnow()
@@ -20,6 +21,10 @@ def create_registeredclient():
     registered_client.save()
 
     return registered_client
+
+
+def random_username():
+    return "user-".join(random.choice(string.lowercase) for i in range(5))
 
 
 class RegisteredClientTests(APITestCase):
@@ -35,6 +40,7 @@ class RegisteredClientTests(APITestCase):
     def test_post(self):
         url = reverse('registered_client')
         data = {
+            "user_name": random_username(),
             "phrase": "nice wise ox"
         }
         response = self.client.post(url, data, format='json')
@@ -51,6 +57,7 @@ class RegisteredClientTests(APITestCase):
     def test_post_invalid_phrase(self):
         url = reverse('registered_client')
         data = {
+            "user_name": random_username(),
             "phrase": "gibberish text here"
         }
         response = self.client.post(url, data, format='json')
@@ -61,6 +68,7 @@ class RegisteredClientTests(APITestCase):
     def test_post_to_short_phrase(self):
         url = reverse('registered_client')
         data = {
+            "user_name": random_username(),
             "phrase": "nice wise"
         }
         response = self.client.post(url, data, format='json')
@@ -114,7 +122,8 @@ def create_score(registered_client):
 
 
 def get_played_on_date_as_epoch(response, index):
-    return datetime.datetime.strptime(response.data[index]['played_on'], '%Y-%m-%dT%H:%M:%S.%fZ').strftime("%s") * 1000
+    t = datetime.datetime.strptime(response.data[index]['played_on'], '%Y-%m-%dT%H:%M:%S.%fZ').timetuple()
+    return time.mktime(t) * 1000
 
 
 class ScoreTests(APITestCase):
@@ -158,8 +167,6 @@ class ScoreTests(APITestCase):
         self.assertEqual(Score.objects.count(), 1)
         self.assertEqual(response.data['registered_client'], data['registered_client'])
         self.assertEqual(response.data['played_on'], data['played_on'])
-        self.assertEqual(response.data['user_name'], data['user_name'])
         self.assertEqual(response.data['play_time'], data['play_time'])
         self.assertEqual(response.data['altitude'], data['altitude'])
         self.assertEqual(response.data['score'], data['score'])
-
