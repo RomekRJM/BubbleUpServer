@@ -11,7 +11,7 @@ class RegisteredClientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RegisteredClient
-        fields = ('uuid', 'phrase', 'date_joined', 'country', 'ip')
+        fields = ('uuid', 'user_name', 'phrase', 'date_joined', 'country', 'ip')
 
 
 class ScoreSerializer(serializers.ModelSerializer):
@@ -29,7 +29,6 @@ class ScoreSerializer(serializers.ModelSerializer):
 
         score = Score()
         score.registered_client = RegisteredClient.objects.get(uuid__exact=validated_data['registered_client'].uuid)
-        score.user_name = validated_data['user_name']
         score.played_on = validated_data['played_on']
         score.recieved_on = validated_data['recieved_on']
         score.play_time = validated_data['play_time']

@@ -5,6 +5,7 @@ from django.db.models import Model, CharField, DateTimeField, IntegerField, Fore
 
 class RegisteredClient(Model):
     uuid = CharField(max_length=36)
+    user_name = CharField(max_length=64, unique=True, null=True)
     date_joined = DateTimeField()
     country = CharField(max_length=256, blank=True, null=True)
     ip = CharField(max_length=40)
@@ -13,7 +14,6 @@ class RegisteredClient(Model):
 
 class Score(Model):
     registered_client = ForeignKey(RegisteredClient)
-    user_name = CharField(max_length=64)
     played_on = DateTimeField()
     recieved_on = DateTimeField()
     play_time = IntegerField()

@@ -37,6 +37,7 @@ class RegisteredClientList(mixins.ListModelMixin, generics.GenericAPIView):
     def post(self, request, format=None):
         serializer = RegisteredClientSerializer(data={
             "uuid": str(uuid.uuid4()),
+            "user_name": request.data['user_name'],
             "date_joined": datetime.datetime.utcnow(),
             "ip": request.META['REMOTE_ADDR'],
             "phrase": request.data['phrase']

@@ -12,6 +12,7 @@ import string
 
 def create_registeredclient():
     registered_client = RegisteredClient()
+    registered_client.user_name = "client-".join(random.choice(string.lowercase) for i in range(3))
     registered_client.country = 'Poland'
     registered_client.ip = '212.33.42.138'
     registered_client.date_joined = datetime.datetime.utcnow()
@@ -102,7 +103,6 @@ class RegisteredClientTests(APITestCase):
 def create_score(registered_client):
     score = Score()
     score.registered_client = registered_client
-    score.user_name = "client-".join(random.choice(string.lowercase) for i in range(3))
     score.played_on = datetime.datetime.utcnow()
     score.recieved_on = datetime.datetime.utcnow()
     score.play_time = random.randint(2000, 30000)
@@ -145,7 +145,6 @@ class ScoreTests(APITestCase):
     def test_post(self):
         registered_client = create_registeredclient()
         data = {
-            "user_name": "RomekRJM",
             "played_on": "2016-05-01T22:22:14Z",
             "registered_client": registered_client.uuid,
             "play_time": 23400,
