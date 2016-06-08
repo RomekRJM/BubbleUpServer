@@ -2,8 +2,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
 from BubbleUpServer.models import RegisteredClient, Score
-
-import datetime
+from datetime import datetime
 
 __author__ = "roman.subik"
 
@@ -28,7 +27,7 @@ class ScoreSerializer(serializers.ModelSerializer):
         fields = ('played_on', 'recieved_on', 'play_time', 'altitude', 'score', 'registered_client')
 
     def create(self, validated_data):
-        validated_data['recieved_on'] = datetime.datetime.utcnow()
+        validated_data['recieved_on'] = datetime.utcnow()
 
         score = Score()
         score.registered_client = RegisteredClient.objects.get(uuid__exact=validated_data['registered_client'].uuid)

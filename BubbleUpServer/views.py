@@ -8,7 +8,7 @@ from django.http import HttpResponse
 from BubbleUpServer.models import RegisteredClient, Score
 from BubbleUpServer.phrases import Phrase
 from BubbleUpServer.serializers import RegisteredClientSerializer, ScoreSerializer
-import datetime
+from datetime import datetime
 
 
 def has_valid_phrase(func):
@@ -42,7 +42,7 @@ class RegisteredClientList(mixins.ListModelMixin, generics.GenericAPIView):
         serializer = RegisteredClientSerializer(data={
             "uuid": str(uuid.uuid4()),
             "user_name": request.data['user_name'],
-            "date_joined": datetime.datetime.utcnow(),
+            "date_joined": datetime.utcnow(),
             "ip": request.META['REMOTE_ADDR'],
             "phrase": request.data['phrase']
         })
