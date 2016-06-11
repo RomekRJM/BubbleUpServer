@@ -66,3 +66,6 @@ target/
 
 # DB
 *.sqlite3
+
+# mac
+.DS_Store
