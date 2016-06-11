@@ -49,7 +49,7 @@ class RegisteredClientTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(RegisteredClient.objects.count(), 1)
-        self.assertEqual(response.data[0]['uuid'], registered_client.uuid)
+        self.assertEqual(response.data['results'][0]['uuid'], registered_client.uuid)
 
     def test_post(self):
         url = reverse('registered_client')
@@ -172,13 +172,13 @@ def create_score(registered_client):
 
 
 def get_played_on_date_as_epoch(response, index):
-    t = datetime.strptime(response.data[index]['played_on'], '%Y-%m-%dT%H:%M:%S.%fZ').timetuple()
+    t = datetime.strptime(response.data['results'][index]['played_on'], '%Y-%m-%dT%H:%M:%S.%fZ').timetuple()
     return time.mktime(t) * 1000
 
 
 def ordered_by_descending_playtime(response, num_of_elements):
     for i in range(1, num_of_elements):
-        if response.data[i-1]['play_time'] < response.data[i]['play_time']:
+        if response.data['results'][i-1]['play_time'] < response.data['results'][i]['play_time']:
             return False
 
     return True
@@ -195,8 +195,8 @@ class ScoreTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Score.objects.count(), 2)
-        self.assertEqual(response.data[0]['registered_client'], registered_client.uuid)
-        self.assertEqual(response.data[1]['registered_client'], registered_client.uuid)
+        self.assertEqual(response.data['results'][0]['registered_client'], registered_client.uuid)
+        self.assertEqual(response.data['results'][1]['registered_client'], registered_client.uuid)
 
         self.assertTrue(get_played_on_date_as_epoch(response, 0) >= get_played_on_date_as_epoch(response, 1))
 
@@ -208,7 +208,7 @@ class ScoreTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Score.objects.count(), 120)
-        self.assertEqual(len(response.data), ScoreList.MAX_ELEMENTS)
+        self.assertEqual(len(response.data['results']), ScoreList.MAX_ELEMENTS)
 
     def test_post(self):
         registered_client = create_registeredclient()
