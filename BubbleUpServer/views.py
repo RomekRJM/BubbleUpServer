@@ -7,7 +7,7 @@ from django.http import HttpResponse
 
 from BubbleUpServer.models import RegisteredClient, Score
 from BubbleUpServer.phrases import Phrase
-from BubbleUpServer.serializers import RegisteredClientSerializer, ScoreSerializer
+from BubbleUpServer.serializers import RegisteredClientSerializer, ScoreSerializer, ScorePagination
 from datetime import datetime
 
 
@@ -61,6 +61,7 @@ class RegisteredClientDetail(generics.RetrieveUpdateDestroyAPIView):
 
 class ScoreList(generics.ListCreateAPIView):
     serializer_class = ScoreSerializer
+    pagination_class = ScorePagination
 
     def get_queryset(self):
         order_by = '-played_on'

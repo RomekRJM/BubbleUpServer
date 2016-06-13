@@ -1,8 +1,6 @@
 from django.core.urlresolvers import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-
-from BubbleUpServer.views import ScoreList
 from models import RegisteredClient, Score
 import random
 import string
@@ -179,11 +177,8 @@ def get_played_on_date_as_epoch(response, index):
 
 def ordered_by_descending_playtime(response, num_of_elements):
     for i in range(1, num_of_elements):
-        try:
-            if response.data['results'][i-1]['play_time'] < response.data['results'][i]['play_time']:
-                return False
-        except Exception as e:
-            pass
+        if response.data['results'][i-1]['play_time'] < response.data['results'][i]['play_time']:
+            return False
 
     return True
 
