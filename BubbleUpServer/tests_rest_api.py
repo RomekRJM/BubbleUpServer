@@ -1,14 +1,18 @@
 from django.core.urlresolvers import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
+
+from BubbleUpServer.serializers import ScorePagination
 from models import RegisteredClient, Score
 import random
 import string
 import time
 import uuid
-from datetime import datetime
+from django.test import TestCase
+from datetime import datetime, timedelta
 from random import randint
 from settings import REST_FRAMEWORK
+from mock import Mock
 
 
 def create_registeredclient():
@@ -257,3 +261,73 @@ class ScoreTests(APITestCase):
         print("Got response in " + str(after_response_multi-after_response) + "s, for all clients")
 
         assert ordered_by_descending_playtime(response, REST_FRAMEWORK['PAGE_SIZE'])
+
+
+class PaginationTests(TestCase):
+
+    def test_pagination_order_by_score(self):
+        pagination = ScorePagination()
+        registered_client = create_registeredclient()
+        score1 = create_score(registered_client)
+        score1.score = 1
+        score1.save()
+
+        for i in range(REST_FRAMEWORK['PAGE_SIZE']):
+            score2 = create_score(create_registeredclient())
+            score2.score = 2
+            score2.save()
+
+        score3 = create_score(create_registeredclient())
+        score3.score = 1
+        score3.played_on = score1.played_on - timedelta(days=1)
+        score3.save()
+
+        queryset = Score.objects.all().order_by('-score', 'played_on')
+
+        for q in queryset:
+            print q.id
+
+        request = Mock()
+        request.query_params = {
+            'bestof': registered_client.uuid,
+            'order_by': '-score'
+        }
+
+        page = pagination.paginate_queryset(queryset=queryset, request=request)
+        assert pagination.page_number == 2
+        assert page[len(page)-1].id == score1.id
+
+
+    def test_pagination_order_by_play_time(self):
+        pagination = ScorePagination()
+        registered_client = create_registeredclient()
+        score1 = create_score(registered_client)
+        score1.altitude = 2000
+        score1.play_time = 20000
+        score1.save()
+
+        for i in range(REST_FRAMEWORK['PAGE_SIZE']):
+            score2 = create_score(create_registeredclient())
+            score2.altitude = 2000
+            score2.play_time = 10000
+            score2.save()
+
+        score3 = create_score(create_registeredclient())
+        score3.altitude = 5
+        score3.play_time = 200
+        score3.save()
+
+        queryset = Score.objects.all().order_by('-altitude', 'play_time', 'played_on')
+
+        for q in queryset:
+            print q.id
+
+        request = Mock()
+        request.query_params = {
+            'bestof': registered_client.uuid,
+            'order_by': '-play_time'
+        }
+
+        page = pagination.paginate_queryset(queryset=queryset, request=request)
+        assert pagination.page_number == 2
+        assert page[0].id == score1.id

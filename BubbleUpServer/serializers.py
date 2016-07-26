@@ -16,7 +16,6 @@ __author__ = "roman.subik"
 
 
 class RegisteredClientSerializer(serializers.ModelSerializer):
-
     user_name = UniqueValidator(queryset=RegisteredClient.objects.all())
 
     class Meta:
@@ -25,7 +24,6 @@ class RegisteredClientSerializer(serializers.ModelSerializer):
 
 
 class ScoreSerializer(serializers.ModelSerializer):
-
     registered_client = serializers.SlugRelatedField(many=False, read_only=False, slug_field='uuid', allow_null=True,
                                                      queryset=RegisteredClient.objects.all())
     recieved_on = serializers.StringRelatedField(required=False)
@@ -50,15 +48,15 @@ class ScoreSerializer(serializers.ModelSerializer):
 
 
 class ScorePagination(PageNumberPagination):
+    def __init__(self):
+        self.page_number = 0
 
     def paginate_queryset(self, queryset, request, view=None):
         """
         Paginate a queryset if required, either returning a
         page object, or `None` if pagination is not configured for this view.
         """
-        page_size = self.get_page_size(request)
-        if not page_size:
-            return None
+        page_size = REST_FRAMEWORK['PAGE_SIZE']
 
         paginator = self.django_paginator_class(queryset, page_size)
 
@@ -68,31 +66,37 @@ class ScorePagination(PageNumberPagination):
             order_by = request.query_params.get('order_by', None)
             better_scores = 0
 
-            if order_by == 'score':
-                top_score = Score.objects.filter(registered_client__uuid__exact=best_of).aggregate(Max('score'))
+            if order_by == '-score':
+                best = Score.objects.filter(registered_client__uuid__exact=best_of).aggregate(Max('score'))
+                top_score = Score.objects.filter(registered_client__uuid__exact=best_of, score=best['score__max']) \
+                    .order_by('played_on')[0]
                 better_scores = Score.objects.filter(Q(score__gt=top_score.score) |
-                                     (Q(score__exact=top_score) & Q(played_on__lte=top_score.played_on))).count()
-            elif order_by == 'play_time':
-                top_playtime = Score.objects.filter(registered_client__uuid__exact=best_of)\
-                    .filter(altitude__exact=2000).aggregate(Min('play_time'))
-                better_scores = Score.objects.filter(Q(altitude__exact=2000),
-                                     Q(play_time__lt=top_playtime.play_time) |
-                                     (Q(play_time__equals=top_playtime.play_time)
-                                      & Q(played_on__lte=top_playtime.played_on))).count()
+                                                     (Q(score__exact=top_score.score) & Q(
+                                                         played_on__lt=top_score.played_on))).count()
+            elif order_by == '-play_time':
+                best = Score.objects.filter(registered_client__uuid__exact=best_of).aggregate(Max('altitude'))
+                top_altitude = Score.objects.filter(registered_client__uuid__exact=best_of) \
+                    .filter(altitude__exact=best['altitude__max']).order_by('-play_time', 'played_on')[0]
+                better_scores = Score.objects.filter(Q(altitude__gt=top_altitude.altitude) |
+                                                     (Q(altitude=top_altitude.altitude) & Q(
+                                                         play_time__lt=top_altitude.play_time)) |
+                                                     (Q(altitude=top_altitude.altitude) & Q(
+                                                         play_time=top_altitude.play_time) & Q(
+                                                         played_on__lt=top_altitude.played_on))).count()
 
-            page_number = ceil(float(better_scores) / REST_FRAMEWORK['PAGE_SIZE'])
+            self.page_number = int(ceil(float(better_scores + 1) / REST_FRAMEWORK['PAGE_SIZE']))
 
         else:
-            page_number = request.query_params.get(self.page_query_param, 1)
+            self.page_number = request.query_params.get(self.page_query_param, 1)
 
-        if page_number in self.last_page_strings:
-            page_number = paginator.num_pages
+        if self.page_number in self.last_page_strings:
+            self.page_number = paginator.num_pages
 
         try:
-            self.page = paginator.page(page_number)
+            self.page = paginator.page(self.page_number)
         except InvalidPage as exc:
             msg = self.invalid_page_message.format(
-                page_number=page_number, message=six.text_type(exc)
+                page_number=self.page_number, message=six.text_type(exc)
             )
             raise NotFound(msg)
 
