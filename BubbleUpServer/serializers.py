@@ -5,7 +5,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.validators import UniqueValidator
 
 from BubbleUpServer.models import RegisteredClient, Score
-from django.db.models import Q, Max, Min
+from django.db.models import Q, Max
 from django.utils import six, timezone
 from math import ceil
 
@@ -65,14 +65,14 @@ class ScorePagination(PageNumberPagination):
             order_by = request.query_params.get('order_by', None)
             better_scores = 0
 
-            if order_by == '-score':
+            if order_by == 'score':
                 best = Score.objects.filter(registered_client__uuid__exact=best_of).aggregate(Max('score'))
                 top_score = Score.objects.filter(registered_client__uuid__exact=best_of, score=best['score__max']) \
                     .order_by('played_on')[0]
                 better_scores = Score.objects.filter(Q(score__gt=top_score.score) |
                                                      (Q(score__exact=top_score.score) & Q(
                                                          played_on__lt=top_score.played_on))).count()
-            elif order_by == '-play_time':
+            elif order_by == 'altitude':
                 best = Score.objects.filter(registered_client__uuid__exact=best_of).aggregate(Max('altitude'))
                 top_altitude = Score.objects.filter(registered_client__uuid__exact=best_of) \
                     .filter(altitude__exact=best['altitude__max']).order_by('-play_time', 'played_on')[0]

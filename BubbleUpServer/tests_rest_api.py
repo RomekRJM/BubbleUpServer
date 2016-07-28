@@ -10,6 +10,7 @@ import time
 import uuid
 from django.test import TestCase
 from django.utils import timezone
+from rest_framework.exceptions import NotFound
 from datetime import datetime, timedelta
 from random import randint
 from settings import REST_FRAMEWORK
@@ -26,20 +27,6 @@ def create_registeredclient():
     registered_client.save()
 
     return registered_client
-
-
-def create_score(registered_client):
-    score = Score()
-    score.registered_client = registered_client.id
-    score.played_on = timezone.now()
-    score.recieved_on = timezone.now()
-    score.play_time = randint(200, 30000)
-    score.altitude = randint(0, 2000)
-    score.score = randint(0, 200)
-    score.save()
-
-    return score
-
 
 def random_username():
     return "user-".join(random.choice(string.lowercase) for i in range(5))
@@ -180,12 +167,9 @@ def get_played_on_date_as_epoch(response, index):
     return time.mktime(t) * 1000
 
 
-def ordered_by_descending_playtime(response, num_of_elements):
+def assert_ordered_by_descending_altitude(response, num_of_elements):
     for i in range(1, num_of_elements):
-        if response.data['results'][i-1]['play_time'] < response.data['results'][i]['play_time']:
-            return False
-
-    return True
+        assert response.data['results'][i-1]['altitude'] >= response.data['results'][i]['altitude']
 
 
 class ScoreTests(APITestCase):
@@ -193,7 +177,7 @@ class ScoreTests(APITestCase):
         registered_client = create_registeredclient()
         create_score(registered_client)
         create_score(registered_client)
-        response = self.client.get('/scores/registered_clients/' + registered_client.uuid + '/?order_by=play_time',
+        response = self.client.get('/scores/registered_clients/' + registered_client.uuid + '/?order_by=score',
                                    format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -247,21 +231,21 @@ class ScoreTests(APITestCase):
         after_scores = timezone.now()
         print("Added scores in " + str(after_scores-after_clients) + "s")
 
-        response = self.client.get('/scores/registered_clients/' + client.uuid + '/?order_by=play_time',
+        response = self.client.get('/scores/registered_clients/' + client.uuid + '/?order_by=altitude',
                                    format='json')
 
-        assert ordered_by_descending_playtime(response, len(response.data['results']))
+        assert_ordered_by_descending_altitude(response, len(response.data['results']))
 
         after_response = timezone.now()
         print("Got response in " + str(after_response-after_scores) + "s, for single client")
 
-        response = self.client.get('/scores/?order_by=play_time',
+        response = self.client.get('/scores/?order_by=altitude',
                                    format='json')
 
         after_response_multi = timezone.now()
         print("Got response in " + str(after_response_multi-after_response) + "s, for all clients")
 
-        assert ordered_by_descending_playtime(response, REST_FRAMEWORK['PAGE_SIZE'])
+        assert_ordered_by_descending_altitude(response, REST_FRAMEWORK['PAGE_SIZE'])
 
 
 class PaginationTests(TestCase):
@@ -291,13 +275,12 @@ class PaginationTests(TestCase):
         request = Mock()
         request.query_params = {
             'bestof': registered_client.uuid,
-            'order_by': '-score'
+            'order_by': 'score'
         }
 
         page = pagination.paginate_queryset(queryset=queryset, request=request)
-        assert pagination.page_number == 2
-        assert page[len(page)-1].id == score1.id
-
+        self.assertEquals(pagination.page_number, 2)
+        self.assertEquals(page[len(page)-1].id, score1.id)
 
     def test_pagination_order_by_play_time(self):
         pagination = ScorePagination()
@@ -326,9 +309,42 @@ class PaginationTests(TestCase):
         request = Mock()
         request.query_params = {
             'bestof': registered_client.uuid,
-            'order_by': '-play_time'
+            'order_by': 'altitude'
         }
 
         page = pagination.paginate_queryset(queryset=queryset, request=request)
-        assert pagination.page_number == 2
-        assert page[0].id == score1.id
+        self.assertEquals(pagination.page_number, 2)
+        self.assertEquals(page[0].id, score1.id)
+
+    def test_returns_last_page(self):
+        pagination = ScorePagination()
+        number_of_pages = 2
+
+        for i in range(REST_FRAMEWORK['PAGE_SIZE']*number_of_pages):
+            create_score(create_registeredclient())
+
+        queryset = Score.objects.all().order_by('-altitude', 'play_time', 'played_on')
+
+        request = Mock()
+        request.query_params = {
+            'page': 'last'
+        }
+
+        pagination.paginate_queryset(queryset=queryset, request=request)
+        self.assertEquals(pagination.page_number, number_of_pages)
+
+    def test_raises_error_on_invalid_page(self):
+        pagination = ScorePagination()
+        create_score(create_registeredclient())
+
+        queryset = Score.objects.all().order_by('-altitude', 'play_time', 'played_on')
+
+        request = Mock()
+        request.query_params = {
+            'page': '999999'
+        }
+
+        self.assertRaises(NotFound, pagination.paginate_queryset, queryset, request)
+
+
+
