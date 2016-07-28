@@ -5,9 +5,8 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.validators import UniqueValidator
 
 from BubbleUpServer.models import RegisteredClient, Score
-from datetime import datetime
 from django.db.models import Q, Max, Min
-from django.utils import six
+from django.utils import six, timezone
 from math import ceil
 
 from BubbleUpServer.settings import REST_FRAMEWORK
@@ -33,7 +32,7 @@ class ScoreSerializer(serializers.ModelSerializer):
         fields = ('played_on', 'recieved_on', 'play_time', 'altitude', 'score', 'registered_client')
 
     def create(self, validated_data):
-        validated_data['recieved_on'] = datetime.utcnow()
+        validated_data['recieved_on'] = timezone.now()
 
         score = Score()
         score.registered_client = RegisteredClient.objects.get(uuid__exact=validated_data['registered_client'].uuid)

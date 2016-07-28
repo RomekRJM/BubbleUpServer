@@ -9,6 +9,7 @@ import string
 import time
 import uuid
 from django.test import TestCase
+from django.utils import timezone
 from datetime import datetime, timedelta
 from random import randint
 from settings import REST_FRAMEWORK
@@ -20,7 +21,7 @@ def create_registeredclient():
     registered_client.user_name = random_username()
     registered_client.country = 'Poland'
     registered_client.ip = '212.33.42.138'
-    registered_client.date_joined = datetime.utcnow()
+    registered_client.date_joined = timezone.now()
     registered_client.uuid = str(uuid.uuid4())
     registered_client.save()
 
@@ -30,8 +31,8 @@ def create_registeredclient():
 def create_score(registered_client):
     score = Score()
     score.registered_client = registered_client.id
-    score.played_on = datetime.utcnow()
-    score.recieved_on = datetime.utcnow()
+    score.played_on = timezone.now()
+    score.recieved_on = timezone.now()
     score.play_time = randint(200, 30000)
     score.altitude = randint(0, 2000)
     score.score = randint(0, 200)
@@ -164,8 +165,8 @@ class RegisteredClientTests(APITestCase):
 def create_score(registered_client):
     score = Score()
     score.registered_client = registered_client
-    score.played_on = datetime.utcnow()
-    score.recieved_on = datetime.utcnow()
+    score.played_on = timezone.now()
+    score.recieved_on = timezone.now()
     score.play_time = random.randint(2000, 30000)
     score.altitude = random.randint(0, 2000)
     score.score = random.randint(0, 130)
@@ -233,9 +234,9 @@ class ScoreTests(APITestCase):
         self.assertEqual(response.data['score'], data['score'])
 
     def test_scores_with_large_dataset(self):
-        start = datetime.utcnow()
+        start = timezone.now()
         clients = [create_registeredclient() for i in range(0, 1000)]
-        after_clients = datetime.utcnow()
+        after_clients = timezone.now()
 
         print("Added clients in " + str(after_clients-start) + "s")
 
@@ -243,7 +244,7 @@ class ScoreTests(APITestCase):
             client = clients[randint(0, len(clients)-1)]
             create_score(client)
 
-        after_scores = datetime.utcnow()
+        after_scores = timezone.now()
         print("Added scores in " + str(after_scores-after_clients) + "s")
 
         response = self.client.get('/scores/registered_clients/' + client.uuid + '/?order_by=play_time',
@@ -251,13 +252,13 @@ class ScoreTests(APITestCase):
 
         assert ordered_by_descending_playtime(response, len(response.data['results']))
 
-        after_response = datetime.utcnow()
+        after_response = timezone.now()
         print("Got response in " + str(after_response-after_scores) + "s, for single client")
 
         response = self.client.get('/scores/?order_by=play_time',
                                    format='json')
 
-        after_response_multi = datetime.utcnow()
+        after_response_multi = timezone.now()
         print("Got response in " + str(after_response_multi-after_response) + "s, for all clients")
 
         assert ordered_by_descending_playtime(response, REST_FRAMEWORK['PAGE_SIZE'])
