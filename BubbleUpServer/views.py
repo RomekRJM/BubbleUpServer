@@ -1,6 +1,6 @@
 import uuid
 
-from rest_framework import generics, mixins, viewsets
+from rest_framework import generics, mixins, viewsets, exceptions
 from rest_framework.response import Response
 from django.http import HttpResponse
 from django.utils import timezone
@@ -69,7 +69,11 @@ class ScoreList(generics.ListCreateAPIView):
                 order_by = ['-altitude', 'play_time', 'played_on']
 
         if 'uuid' in self.kwargs:
-            registered_client = RegisteredClient.objects.get(uuid=self.kwargs['uuid'])
-            return Score.objects.filter(registered_client_id=registered_client.id).order_by(*order_by)
+            registered_client = RegisteredClient.objects.filter(uuid=self.kwargs['uuid'])
+
+            if registered_client.count() > 0:
+                return Score.objects.filter(registered_client_id=registered_client[0].id).order_by(*order_by)
+            else:
+                raise exceptions.NotFound('Client with uuid ' + self.kwargs['uuid'] + ' was not found on the server.')
 
         return Score.objects.all().order_by(*order_by)
