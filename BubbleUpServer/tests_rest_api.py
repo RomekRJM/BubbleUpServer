@@ -247,6 +247,15 @@ class ScoreTests(APITestCase):
 
         assert_ordered_by_descending_altitude(response, REST_FRAMEWORK['PAGE_SIZE'])
 
+    def test_invalid_client_uuid(self):
+        registered_client = create_registeredclient()
+        create_score(registered_client)
+        create_score(registered_client)
+        response = self.client.get('/scores/registered_clients/this-is-invalid-uuid/?order_by=score',
+                                   format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
 
 class PaginationTests(TestCase):
 
@@ -345,6 +354,3 @@ class PaginationTests(TestCase):
         }
 
         self.assertRaises(NotFound, pagination.paginate_queryset, queryset, request)
-
-
-
