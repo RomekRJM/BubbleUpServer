@@ -187,11 +187,11 @@ class ScoreTests(APITestCase):
 
         self.assertTrue(get_played_on_date_as_epoch(response, 0) >= get_played_on_date_as_epoch(response, 1))
 
-    def test_get_first_100_only(self):
+    def test_get_number_of_result_equal_to_page_size(self):
         for i in range(120):
             create_score(create_registeredclient())
 
-        response = self.client.get('/scores/', format='json')
+        response = self.client.get('/scores/?page=12', format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Score.objects.count(), 120)
