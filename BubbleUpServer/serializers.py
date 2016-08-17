@@ -91,7 +91,10 @@ class ScorePagination(PageNumberPagination):
                 self.page_number = int(ceil(float(better_scores + 1) / REST_FRAMEWORK['PAGE_SIZE']))
 
         if not self.page_number:
-            self.page_number = page_num_from_query
+            if page_num_from_query:
+                self.page_number = page_num_from_query
+            else:
+                self.page_number = 1
 
         if self.page_number in self.last_page_strings:
             self.page_number = paginator.num_pages
