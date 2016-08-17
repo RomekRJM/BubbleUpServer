@@ -3,6 +3,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.validators import UniqueValidator
+from rest_framework.utils.urls import replace_query_param
 
 from BubbleUpServer.models import RegisteredClient, Score
 from django.db.models import Q, Max
@@ -62,6 +63,7 @@ class ScorePagination(PageNumberPagination):
         paginator = self.django_paginator_class(queryset, page_size)
 
         best_of = request.query_params.get('bestof', None)
+        page_num_from_query = request.query_params.get(self.page_query_param, None)
 
         if best_of:
             order_by = request.query_params.get('order_by', None)
@@ -85,10 +87,11 @@ class ScorePagination(PageNumberPagination):
                                                          play_time=top_altitude.play_time) & Q(
                                                          played_on__lt=top_altitude.played_on))).count()
 
-            self.page_number = int(ceil(float(better_scores + 1) / REST_FRAMEWORK['PAGE_SIZE']))
+            if not page_num_from_query:
+                self.page_number = int(ceil(float(better_scores + 1) / REST_FRAMEWORK['PAGE_SIZE']))
 
-        else:
-            self.page_number = request.query_params.get(self.page_query_param, 1)
+        if not self.page_number:
+            self.page_number = page_num_from_query
 
         if self.page_number in self.last_page_strings:
             self.page_number = paginator.num_pages
@@ -107,3 +110,10 @@ class ScorePagination(PageNumberPagination):
 
         self.request = request
         return list(self.page)
+
+    def get_previous_link(self):
+        if not self.page.has_previous():
+            return None
+        url = self.request.build_absolute_uri()
+        page_number = self.page.previous_page_number()
+        return replace_query_param(url, self.page_query_param, page_number)
