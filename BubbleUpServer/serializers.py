@@ -71,21 +71,25 @@ class ScorePagination(PageNumberPagination):
 
             if order_by == 'score':
                 best = Score.objects.filter(registered_client__uuid__exact=best_of).aggregate(Max('score'))
-                top_score = Score.objects.filter(registered_client__uuid__exact=best_of, score=best['score__max']) \
-                    .order_by('played_on')[0]
-                better_scores = Score.objects.filter(Q(score__gt=top_score.score) |
-                                                     (Q(score__exact=top_score.score) & Q(
-                                                         played_on__lt=top_score.played_on))).count()
+
+                if best['score__max']:
+                    top_score = Score.objects.filter(registered_client__uuid__exact=best_of, score=best['score__max']) \
+                        .order_by('played_on')[0]
+                    better_scores = Score.objects.filter(Q(score__gt=top_score.score) |
+                                                         (Q(score__exact=top_score.score) & Q(
+                                                             played_on__lt=top_score.played_on))).count()
             elif order_by == 'altitude':
                 best = Score.objects.filter(registered_client__uuid__exact=best_of).aggregate(Max('altitude'))
-                top_altitude = Score.objects.filter(registered_client__uuid__exact=best_of) \
-                    .filter(altitude__exact=best['altitude__max']).order_by('-play_time', 'played_on')[0]
-                better_scores = Score.objects.filter(Q(altitude__gt=top_altitude.altitude) |
-                                                     (Q(altitude=top_altitude.altitude) & Q(
-                                                         play_time__lt=top_altitude.play_time)) |
-                                                     (Q(altitude=top_altitude.altitude) & Q(
-                                                         play_time=top_altitude.play_time) & Q(
-                                                         played_on__lt=top_altitude.played_on))).count()
+
+                if best['altitude__max']:
+                    top_altitude = Score.objects.filter(registered_client__uuid__exact=best_of) \
+                        .filter(altitude__exact=best['altitude__max']).order_by('-play_time', 'played_on')[0]
+                    better_scores = Score.objects.filter(Q(altitude__gt=top_altitude.altitude) |
+                                                         (Q(altitude=top_altitude.altitude) & Q(
+                                                             play_time__lt=top_altitude.play_time)) |
+                                                         (Q(altitude=top_altitude.altitude) & Q(
+                                                             play_time=top_altitude.play_time) & Q(
+                                                             played_on__lt=top_altitude.played_on))).count()
 
             if not page_num_from_query:
                 self.page_number = int(ceil(float(better_scores + 1) / REST_FRAMEWORK['PAGE_SIZE']))
