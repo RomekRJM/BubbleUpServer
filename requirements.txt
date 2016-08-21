@@ -2,3 +2,5 @@ django==1.9.5
 djangorestframework==3.3.3
 coverage==4.0.3
 mock==2.0.0
+requests==2.11.1
+APScheduler==3.2.0

@@ -69,3 +69,6 @@ target/
 
 # mac
 .DS_Store
+
+# config
+bubbleup-config.json

@@ -11,6 +11,10 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
+from scheduled import scheduler
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "BubbleUpServer.settings")
 
 application = get_wsgi_application()
+
+scheduler.start()

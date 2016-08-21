@@ -1,0 +1,12 @@
+{
+  "configs": [
+    {
+      "key": "geolocation-url",
+      "value": "http://api.db-ip.com/v2"
+    },
+    {
+      "key": "geolocation-key",
+      "value": "key-here"
+    }
+  ]
+}

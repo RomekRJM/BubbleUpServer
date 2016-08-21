@@ -2,12 +2,14 @@ from django.core.urlresolvers import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from BubbleUpServer.config import Config
 from BubbleUpServer.serializers import ScorePagination
 from models import RegisteredClient, Score
 import random
 import string
 import time
 import uuid
+import os
 from django.test import TestCase
 from django.utils import timezone
 from rest_framework.exceptions import NotFound
@@ -15,13 +17,14 @@ from datetime import datetime, timedelta
 from random import randint
 from settings import REST_FRAMEWORK
 from mock import Mock
+from scheduled import scheduler
 
 
 def create_registeredclient():
     registered_client = RegisteredClient()
     registered_client.user_name = random_username()
-    registered_client.country = 'Poland'
-    registered_client.ip = '212.33.42.138'
+    registered_client.country = None
+    registered_client.ip = '8.8.8.8'
     registered_client.date_joined = timezone.now()
     registered_client.uuid = str(uuid.uuid4())
     registered_client.save()
@@ -354,3 +357,43 @@ class PaginationTests(TestCase):
         }
 
         self.assertRaises(NotFound, pagination.paginate_queryset, queryset, request)
+
+
+class ConfigTests(TestCase):
+
+    def setUp(self):
+        os.environ['CONFIG_PATH'] = 'bubbleup-config-sample.json'
+
+    def tearDown(self):
+        os.environ['CONFIG_PATH'] = 'bubbleup-config-sample.json'
+
+    def test_get_config(self):
+        config = Config()
+        self.assertEquals(config.get_config('geolocation-key'), 'key-here')
+
+    def test_get_default_if_no_config(self):
+        config = Config()
+        self.assertEquals(config.get_config('there-is-no-such-key', 'unknown'), 'unknown')
+
+    def test_raise_error_if_file_not_found(self):
+        os.environ['CONFIG_PATH'] = 'no-such-file.json'
+
+        self.assertRaises(IOError, Config)
+
+
+class SchedulerTests(APITestCase):
+    def tearDown(self):
+        os.environ['TEST_MODE'] = 'on'
+
+    def test_geolocation(self):
+        create_registeredclient()
+        scheduler.start()
+        scheduler.add_listener(self.check_geolocation_data_and_stop_scheduler)
+
+    def check_geolocation_data_and_stop_scheduler(self, a):
+        scheduler.shutdown()
+        client = RegisteredClient.objects.first()
+
+        self.assertEquals(client.country, 'United States')
+        self.assertEquals(client.state, 'California')
+        self.assertEquals(client.city, 'Mountain View')
