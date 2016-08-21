@@ -2,7 +2,6 @@ import requests
 from models import RegisteredClient
 from apscheduler.schedulers.background import BackgroundScheduler
 import logging
-import os
 from config import Config
 
 scheduler = BackgroundScheduler()
@@ -34,5 +33,4 @@ def populate_location():
 
 @scheduler.scheduled_job('interval', seconds=3)
 def schedule():
-    if os.environ.get('TEST_MODE', 'off') != 'on':
-        populate_location()
+    populate_location()

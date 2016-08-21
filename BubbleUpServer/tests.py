@@ -32,7 +32,7 @@ def create_registeredclient():
     return registered_client
 
 def random_username():
-    return "user-".join(random.choice(string.lowercase) for i in range(5))
+    return "user-".join(random.choice(string.lowercase) for i in range(8))
 
 
 class RegisteredClientTests(APITestCase):
@@ -382,16 +382,17 @@ class ConfigTests(TestCase):
 
 
 class SchedulerTests(APITestCase):
+
     def tearDown(self):
-        os.environ['TEST_MODE'] = 'on'
+        scheduler.remove_listener(self.check_geolocation_data)
+        scheduler.shutdown()
 
     def test_geolocation(self):
         create_registeredclient()
         scheduler.start()
-        scheduler.add_listener(self.check_geolocation_data_and_stop_scheduler)
+        scheduler.add_listener(self.check_geolocation_data)
 
-    def check_geolocation_data_and_stop_scheduler(self, a):
-        scheduler.shutdown()
+    def check_geolocation_data(self, a):
         client = RegisteredClient.objects.first()
 
         self.assertEquals(client.country, 'United States')
