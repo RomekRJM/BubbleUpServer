@@ -11,7 +11,7 @@ logging.basicConfig()
 def fetch_geolocation_data(url, apikey, ip):
     response = requests.get('{}/{}/{}'.format(url, apikey, ip))
 
-    if response.status_code == 200:
+    if response.status_code == 200 and 'error' not in response.content:
         return response.json()
 
     return {}

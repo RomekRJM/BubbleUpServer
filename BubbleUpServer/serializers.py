@@ -20,19 +20,22 @@ class RegisteredClientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RegisteredClient
-        fields = ('uuid', 'user_name', 'phrase', 'date_joined', 'country', 'ip')
+        fields = ('uuid', 'user_name', 'phrase', 'date_joined', 'country', 'state', 'city', 'ip')
 
 
 class ScoreSerializer(serializers.ModelSerializer):
     registered_client = serializers.SlugRelatedField(many=False, read_only=False, slug_field='uuid', allow_null=True,
                                                      queryset=RegisteredClient.objects.all())
     user_name = serializers.ReadOnlyField(source='registered_client.user_name')
+    country = serializers.ReadOnlyField(source='registered_client.country')
+    state = serializers.ReadOnlyField(source='registered_client.state')
+    city = serializers.ReadOnlyField(source='registered_client.city')
     recieved_on = serializers.StringRelatedField(required=False)
 
     class Meta:
         model = Score
         fields = ('played_on', 'recieved_on', 'play_time', 'altitude', 'score',
-                  'registered_client', 'user_name')
+                  'registered_client', 'user_name', 'country', 'state', 'city')
 
     def create(self, validated_data):
         validated_data['recieved_on'] = timezone.now()

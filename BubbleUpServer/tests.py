@@ -17,7 +17,7 @@ from datetime import datetime, timedelta
 from random import randint
 from settings import REST_FRAMEWORK
 from mock import Mock
-from scheduled import scheduler
+from scheduled import schedule
 
 
 def create_registeredclient():
@@ -362,14 +362,14 @@ class PaginationTests(TestCase):
 class ConfigTests(TestCase):
 
     def setUp(self):
-        os.environ['CONFIG_PATH'] = 'bubbleup-config-sample.json'
+        os.environ['CONFIG_PATH'] = 'bubbleup-config.json'
 
     def tearDown(self):
-        os.environ['CONFIG_PATH'] = 'bubbleup-config-sample.json'
+        os.environ['CONFIG_PATH'] = 'bubbleup-config.json'
 
     def test_get_config(self):
         config = Config()
-        self.assertEquals(config.get_config('geolocation-key'), 'key-here')
+        self.assertEquals(config.get_config('geolocation-url'), 'http://api.db-ip.com/v2')
 
     def test_get_default_if_no_config(self):
         config = Config()
@@ -383,18 +383,22 @@ class ConfigTests(TestCase):
 
 class SchedulerTests(APITestCase):
 
-    def tearDown(self):
-        scheduler.remove_listener(self.check_geolocation_data)
-        scheduler.shutdown()
-
     def test_geolocation(self):
         create_registeredclient()
-        scheduler.start()
-        scheduler.add_listener(self.check_geolocation_data)
-
-    def check_geolocation_data(self, a):
+        schedule()
         client = RegisteredClient.objects.first()
 
         self.assertEquals(client.country, 'United States')
         self.assertEquals(client.state, 'California')
         self.assertEquals(client.city, 'Mountain View')
+
+    def test_geolocation_no_response(self):
+        client = create_registeredclient()
+        client.ip = "999.-123.876.112"
+        client.save()
+        schedule()
+        client = RegisteredClient.objects.first()
+
+        self.assertEquals(client.country, 'Unknown')
+        self.assertEquals(client.state, 'Unknown')
+        self.assertEquals(client.city, 'Unknown')
