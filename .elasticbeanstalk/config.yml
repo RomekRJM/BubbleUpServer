@@ -1,0 +1,13 @@
+branch-defaults:
+  master:
+    environment: BubbleUpServer
+    group_suffix: null
+global:
+  application_name: BubbleUpServer
+  branch: null
+  default_ec2_keyname: roman_ssh
+  default_platform: python2.7
+  default_region: eu-west-1
+  profile: null
+  repository: null
+  sc: git
