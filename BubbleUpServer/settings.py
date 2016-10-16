@@ -77,13 +77,10 @@ WSGI_APPLICATION = 'BubbleUpServer.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        'TEST_NAME': os.path.join(BASE_DIR, 'testdb.sqlite3'),
-    }
-}
+from config import Config
+
+cfg = Config()
+DATABASES = cfg.get_config('database')
 
 
 # Password validation

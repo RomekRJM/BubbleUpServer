@@ -362,12 +362,19 @@ class PaginationTests(TestCase):
 class ConfigTests(TestCase):
 
     def setUp(self):
+        os.environ['CONFIG_PATH_TYPE'] = 'LOCAL_FILE'
         os.environ['CONFIG_PATH'] = 'bubbleup-config.json'
 
     def tearDown(self):
+        os.environ['CONFIG_PATH_TYPE'] = 'LOCAL_FILE'
         os.environ['CONFIG_PATH'] = 'bubbleup-config.json'
 
     def test_get_config(self):
+        config = Config()
+        self.assertEquals(config.get_config('geolocation-url'), 'http://api.db-ip.com/v2')
+
+    def test_get_s3_config(self):
+        os.environ['CONFIG_PATH_TYPE'] = 'S3'
         config = Config()
         self.assertEquals(config.get_config('geolocation-url'), 'http://api.db-ip.com/v2')
 
