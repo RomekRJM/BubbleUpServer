@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from django.http import HttpResponse
 from django.utils import timezone
 
+from BubbleUpServer.config import Config
 from BubbleUpServer.models import RegisteredClient, Score
 from BubbleUpServer.phrases import Phrase
 from BubbleUpServer.serializers import RegisteredClientSerializer, ScoreSerializer, ScorePagination
@@ -38,11 +39,13 @@ class RegisteredClientList(mixins.ListModelMixin, generics.GenericAPIView):
         if "user_name" not in request.data or "phrase" not in request.data:
             return Response(status=400)
 
+        client_host_header = Config().get_config("client-host-header")
+
         serializer = RegisteredClientSerializer(data={
             "uuid": str(uuid.uuid4()),
             "user_name": request.data['user_name'],
             "date_joined": timezone.now(),
-            "ip": request.META['REMOTE_ADDR'],
+            "ip": request.META[client_host_header],
             "phrase": request.data['phrase']
         })
         if serializer.is_valid():

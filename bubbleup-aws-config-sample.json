@@ -9,6 +9,10 @@
       "value": "key-here"
     },
     {
+      "key": "client-host-header",
+      "value": "HTTP_X_FORWARDED_FOR"
+    },
+    {
       "key": "database",
       "value": {
         "default": {

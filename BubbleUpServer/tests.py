@@ -375,6 +375,7 @@ class ConfigTests(TestCase):
 
     def test_get_s3_config(self):
         os.environ['CONFIG_PATH_TYPE'] = 'S3'
+        os.environ['CONFIG_KEY'] = 'BubbleUpServerConfig/bubbleup-aws-config.json'
         config = Config()
         self.assertEquals(config.get_config('geolocation-url'), 'http://api.db-ip.com/v2')
 

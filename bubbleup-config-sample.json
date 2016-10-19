@@ -9,6 +9,10 @@
       "value": "key-here"
     },
     {
+      "key": "client-host-header",
+      "value": "REMOTE_ADDR"
+    },
+    {
       "key": "database",
       "value": {
         "default": {
