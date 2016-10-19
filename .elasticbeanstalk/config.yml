@@ -1,6 +1,6 @@
 branch-defaults:
   master:
-    environment: BubbleUpServerGreen
+    environment: BubbleUpServer
     group_suffix: null
 global:
   application_name: BubbleUpServer
