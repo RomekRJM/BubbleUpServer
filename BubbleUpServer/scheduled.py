@@ -31,6 +31,6 @@ def populate_location():
         client.save()
 
 
-@scheduler.scheduled_job('interval', seconds=3)
+@scheduler.scheduled_job('interval', minutes=30)
 def schedule():
     populate_location()
