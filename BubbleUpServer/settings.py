@@ -123,11 +123,13 @@ LOGGING = {
             'level': 'INFO',
             'class': 'logging.FileHandler',
             'filename': log_file,
+            'formatter': 'simple',
         },
         'schedule-file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
             'filename': schedule_log_file,
+            'formatter': 'simple',
         }
     },
     'loggers': {
@@ -140,6 +142,12 @@ LOGGING = {
             'handlers': ['schedule-file'],
             'level': 'INFO',
             'propagate': True,
+        }
+    },
+    'formatters': {
+        'simple': {
+            'format': '[%(asctime)s] %(levelname)s %(message)s',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
         }
     },
 }
