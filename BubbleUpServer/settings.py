@@ -108,6 +108,42 @@ REST_FRAMEWORK = {
      'PAGE_SIZE': 10
 }
 
+log_file = 'bubble.log'
+schedule_log_file = 'schedule-bubble.log'
+
+if cfg.is_ec2_setup():
+    log_file = '/var/log/httpd/bubble.log'
+    schedule_log_file = '/var/log/httpd/schedule-bubble.log'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'base-file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': log_file,
+        },
+        'schedule-file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': schedule_log_file,
+        }
+    },
+    'loggers': {
+        'BubbleUpServer': {
+            'handlers': ['base-file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'apscheduler': {
+            'handlers': ['schedule-file'],
+            'level': 'INFO',
+            'propagate': True,
+        }
+    },
+}
+
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
 
