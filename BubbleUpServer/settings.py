@@ -15,7 +15,6 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
 
@@ -26,7 +25,6 @@ SECRET_KEY = 'i94l(4j)(+y@e#$8q6^ni(nmp#0jbk^9%7twde#33_&na+2$w3'
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -73,7 +71,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'BubbleUpServer.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
@@ -81,7 +78,6 @@ from config import Config
 
 cfg = Config()
 DATABASES = cfg.get_config('database')
-
 
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
@@ -101,19 +97,21 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 REST_FRAMEWORK = {
-     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
-     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-     'PAGE_SIZE': 10
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    ),
+    'PAGE_SIZE': 10
 }
 
-log_file = 'bubble.log'
-schedule_log_file = 'schedule-bubble.log'
+log_file = '/var/log/httpd/bubble.log'
+schedule_log_file = '/var/log/httpd/schedule-bubble.log'
 
-if cfg.is_ec2_setup():
-    log_file = '/var/log/httpd/bubble.log'
-    schedule_log_file = '/var/log/httpd/schedule-bubble.log'
+if cfg.is_local_setup():
+    log_file = 'bubble.log'
+    schedule_log_file = 'schedule-bubble.log'
 
 LOGGING = {
     'version': 1,
@@ -164,7 +162,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
