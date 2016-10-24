@@ -22,7 +22,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'i94l(4j)(+y@e#$8q6^ni(nmp#0jbk^9%7twde#33_&na+2$w3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -112,6 +112,7 @@ schedule_log_file = '/var/log/httpd/schedule-bubble.log'
 if cfg.is_local_setup():
     log_file = 'bubble.log'
     schedule_log_file = 'schedule-bubble.log'
+    DEBUG = True
 
 LOGGING = {
     'version': 1,
